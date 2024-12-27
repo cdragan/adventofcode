@@ -1,0 +1,38 @@
+#!/usr/bin/env kos
+
+import base.*
+import io
+import math
+
+const input_file_name = "input01.txt"
+
+fun distance(elem)
+{
+    const a, b = elem
+    return math.abs(a - b)
+}
+
+fun distance_from_line(line)
+{
+    return distance(line.strip().split().map(integer)...)
+}
+
+with const file = io.open(input_file_name) {
+    const lines = file.read_lines()
+
+    const left = []
+    const right = []
+
+    for const line in lines {
+        const left_elem, right_elem = line.strip().split().map(integer)
+        left.push(left_elem)
+        right.push(right_elem)
+    }
+
+    left.sort()
+    right.sort()
+
+    const result = zip(left, right) -> map(distance) -> sum
+
+    print("Part 1 answer is \(result)")
+}
