@@ -12,49 +12,48 @@ fun distance(elem)
     return math.abs(a - b)
 }
 
-fun distance_from_line(line)
+public fun main
 {
-    return distance(line.strip().split().map(integer)...)
-}
+    with const file = io.open(input_file_name) {
+        const lines = file.read_lines()
 
-with const file = io.open(input_file_name) {
-    const lines = file.read_lines()
+        const left  = []
+        const right = []
 
-    const left  = []
-    const right = []
+        for const line in lines {
+            const left_elem, right_elem = line.strip().split().map(integer)
+            left.push(left_elem)
+            right.push(right_elem)
+        }
 
-    for const line in lines {
-        const left_elem, right_elem = line.strip().split().map(integer)
-        left.push(left_elem)
-        right.push(right_elem)
+        left.sort()
+        right.sort()
+
+        const result = zip(left, right) -> map(distance) -> sum
+
+        print("Part 1 answer is \(result)")
+
+        ###################################################
+
+        var total     = 0
+        var right_idx = 0
+
+        for const left_elem in left {
+
+            while right_idx < right.size {
+                const right_elem = right[right_idx]
+
+                if right_elem == left_elem {
+                    total += left_elem
+                }
+                else if right_elem > left_elem {
+                    break
+                }
+
+                right_idx += 1
+            }
+        }
+
+        print("Part 2 answer is \(total)")
     }
-
-    left.sort()
-    right.sort()
-
-    const result = zip(left, right) -> map(distance) -> sum
-
-    print("Part 1 answer is \(result)")
-
-    ###################################################
-
-    var total     = 0
-    var right_idx = 0
-
-    for const left_elem in left {
-        if right_idx >= right.size {
-            break
-        }
-
-        while right_idx < right.size && right[right_idx] < left_elem {
-            right_idx += 1
-        }
-
-        while right_idx < right.size && right[right_idx] == left_elem {
-            total += left_elem
-            right_idx += 1
-        }
-    }
-
-    print("Part 2 answer is \(total)")
 }
