@@ -1,0 +1,62 @@
+#!/usr/bin/env kos
+
+import base.*
+import io
+
+fun parse_report(line)
+{
+    const iterator = line.strip().split().map(integer)
+
+    var prev = iterator()
+
+    const report = []
+
+    for const elem in iterator {
+        report.push(elem - prev)
+        prev = elem
+    }
+
+    return report
+}
+
+fun is_report_safe1(report)
+{
+    const num_ok_asc  = count(x => x > 0 && x <=  3,  report)
+    const num_ok_desc = count(x => x < 0 && x >= -3, report)
+
+    # All diffs are valid and all are either ascending or descending
+    return num_ok_asc == report.size || num_ok_desc == report.size
+}
+
+fun is_report_safe2(report)
+{
+    if is_report_safe1(report[1:]) || is_report_safe1(report[:-1]) {
+        return true
+    }
+
+    for const idx in range(report.size - 1) {
+        # Removing a level is equivalent to summing two consecutive diffs
+        const sum = report[idx] + report[idx + 1]
+        if is_report_safe1(report[:].insert(idx, idx + 2, [sum])) {
+            return true
+        }
+    }
+
+    return false
+}
+
+public fun main(script, input_file_name = "input02.txt")
+{
+    with const file = io.open(input_file_name) {
+
+        const reports = [ file.read_lines().map(parse_report) ... ]
+
+        const num_safe1 = count(is_report_safe1, reports)
+
+        print("Part 1 answer is \(num_safe1)")
+
+        const num_safe2 = count(is_report_safe2, reports)
+
+        print("Part 2 answer is \(num_safe2)")
+    }
+}
