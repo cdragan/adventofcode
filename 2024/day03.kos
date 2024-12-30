@@ -1,0 +1,61 @@
+#!/usr/bin/env kos
+
+import base.*
+import io
+import re
+
+public fun main(script, input_file_name = "input03.txt")
+{
+    with const file = io.open(input_file_name) {
+        const input = string(file.read())
+
+        const mul_re = re.re(r"mul\((\d+),(\d+)\)")
+
+        var result = 0
+        var pos    = 0
+        loop {
+            const found = mul_re.find(input, pos)
+            if ! found {
+                break
+            }
+
+            const a, b = found.match_groups -> map(integer)
+
+            result += a * b
+
+            pos = found.end
+        }
+
+        print("Part 1 answer is \(result)")
+
+        ##################################################
+
+        const dont_re = re.re(r"mul\((\d+),(\d+)\)|(do\(\))|(don't\(\))")
+
+        var enabled = true
+        result = 0
+        pos    = 0
+        loop {
+            const found = dont_re.find(input, pos)
+            if ! found {
+                break
+            }
+
+            if found.match_groups[2] {
+                enabled = true
+            }
+            else if found.match_groups[3] {
+                enabled = false
+            }
+            else if enabled {
+                const a, b = found.match_groups -> map(integer)
+
+                result += a * b
+            }
+
+            pos = found.end
+        }
+
+        print("Part 2 answer is \(result)")
+    }
+}
