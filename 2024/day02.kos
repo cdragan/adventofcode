@@ -3,25 +3,30 @@
 import base.*
 import io
 
-fun parse_report(line)
+fun pair_up(iterator)
 {
-    const iterator = line.strip().split().map(integer)
+    iterator = iterator.iterator()
 
     var prev = iterator()
 
-    const report = []
-
     for const elem in iterator {
-        report.push(elem - prev)
+        yield [prev, elem]
         prev = elem
     }
+}
 
-    return report
+fun parse_report(line)
+{
+    return line.strip().split()
+           -> map(integer)
+           -> pair_up
+           -> map(x => x[1] - x[0])
+           -> array
 }
 
 fun is_report_safe1(report)
 {
-    const num_ok_asc  = count(x => x > 0 && x <=  3,  report)
+    const num_ok_asc  = count(x => x > 0 && x <=  3, report)
     const num_ok_desc = count(x => x < 0 && x >= -3, report)
 
     # All diffs are valid and all are either ascending or descending
