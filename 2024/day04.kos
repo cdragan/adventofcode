@@ -1,0 +1,72 @@
+#!/usr/bin/env kos
+
+import base.print
+import base.range
+import base.enumerate
+import base.count
+import io
+
+public fun main(script, input_file_name = "input04.txt")
+{
+    var input = void
+    with const file = io.open(input_file_name) {
+        input = [ file.read_lines() ... ]
+    }
+
+    const directions = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+        [1, 1],
+        [1, -1],
+        [-1, 1],
+        [-1, -1]
+    ]
+
+    var num_xmas = 0
+
+    for const y in range(input.size) {
+        const line  = input[y]
+        var   x_pos = -1
+        loop {
+            x_pos = line.scan("X", x_pos + 1)
+            if x_pos < 0 {
+                break
+            }
+
+            fun has_xmas(dir)
+            {
+                const dx, dy = dir
+                for const idx, ch in enumerate("MAS") {
+                    const char_y = (idx + 1) * dy + y
+
+                    if char_y < 0 || char_y >= input.size {
+                        return false
+                    }
+
+                    const char_x = (idx + 1) * dx + x_pos
+                    if char_x < 0 {
+                        return false
+                    }
+
+                    const char_line = input[char_y]
+                    if char_x >= char_line.size {
+                        return false
+                    }
+
+                    if char_line[char_x] != ch {
+                        return false
+                    }
+                }
+
+                return true
+            }
+
+            # Find "MAS" in all directions
+            num_xmas += directions -> count(has_xmas)
+        }
+    }
+
+    print("Part 1 answer is \(num_xmas)")
+}
