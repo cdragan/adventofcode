@@ -4,6 +4,7 @@ import base.print
 import base.range
 import base.enumerate
 import base.count
+import base.join
 import io
 
 public fun main(script, input_file_name = "input04.txt")
@@ -69,4 +70,38 @@ public fun main(script, input_file_name = "input04.txt")
     }
 
     print("Part 1 answer is \(num_xmas)")
+
+    ##################################################
+
+    num_xmas = 0
+
+    for const y in range(1, input.size - 1) {
+        const line  = input[y]
+        var   a_pos = 0
+        loop {
+            a_pos = line.scan("A", a_pos + 1)
+            if a_pos < 0 || a_pos == line.size - 1 {
+                break
+            }
+
+            const mas1 = join("", [
+                input[y - 1][a_pos - 1],
+                input[y + 1][a_pos + 1]
+            ])
+            const mas2 = join("", [
+                input[y - 1][a_pos + 1],
+                input[y + 1][a_pos - 1]
+            ])
+
+            if mas1 != "MS" && mas1 != "SM" {
+                continue
+            }
+
+            if mas2 == "MS" || mas2 == "SM" {
+                num_xmas += 1
+            }
+        }
+    }
+
+    print("Part 2 answer is \(num_xmas)")
 }
