@@ -48,7 +48,7 @@ public fun main(script, input_file_name = "input05.txt")
             for const j in range(i + 1, update.size) {
                 const succ = update[j]
 
-                if ! (update[j] in valid_successors) {
+                if ! (succ in valid_successors) {
                     return false
                 }
             }
@@ -64,4 +64,41 @@ public fun main(script, input_file_name = "input05.txt")
     const result1 = updates -> filter(is_update_correct) -> map(get_middle_page) -> sum
 
     print("Part 1 answer is \(result1)")
+
+    ##################################################
+
+    fun is_update_incorrect(update)
+    {
+        return ! is_update_correct(update)
+    }
+
+    fun fix_update(update)
+    {
+        var i = 0
+        while i < update.size {
+            const page             = update[i]
+            const valid_successors = orders[integer(page)]
+            var   insert_pos       = i
+
+            for const j in range(i + 1, update.size) {
+                const succ = update[j]
+
+                if ! (succ in valid_successors) {
+                    update.insert(j, j + 1, [])
+                    update.insert(insert_pos, insert_pos, [succ])
+                    insert_pos += 1
+                }
+            }
+
+            if insert_pos == i {
+                i += 1
+            }
+        }
+
+        return update
+    }
+
+    const result2 = updates -> filter(is_update_incorrect) -> map(fix_update) -> map(get_middle_page) -> sum
+
+    print("Part 2 answer is \(result2)")
 }
