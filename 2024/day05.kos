@@ -1,0 +1,67 @@
+#!/usr/bin/env kos
+
+import base.print
+import base.map
+import base.filter
+import base.integer
+import base.range
+import base.sum
+import io
+
+public fun main(script, input_file_name = "input05.txt")
+{
+    const orders  = []
+    const updates = []
+
+    with const f = io.open(input_file_name) {
+
+        var reading_updates = false
+
+        for var line in f.read_lines() {
+            line = line.strip()
+
+            if line.size == 0 {
+                reading_updates = true
+                continue
+            }
+
+            if reading_updates {
+                updates.push([ line.split(",") ... ])
+            }
+            else {
+                const x, y = line.split("|")
+                const idx = integer(x)
+                while orders.size <= idx {
+                    orders.push({})
+                }
+                orders[idx][y] = true
+            }
+        }
+    }
+
+    fun is_update_correct(update)
+    {
+        for const i in range(update.size) {
+            const page = integer(update[i])
+            const valid_successors = orders[page]
+
+            for const j in range(i + 1, update.size) {
+                const succ = update[j]
+
+                if ! (update[j] in valid_successors) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    fun get_middle_page(update)
+    {
+        return integer(update[ update.size / 2 ])
+    }
+
+    const result1 = updates -> filter(is_update_correct) -> map(get_middle_page) -> sum
+
+    print("Part 1 answer is \(result1)")
+}
