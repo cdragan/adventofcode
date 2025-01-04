@@ -1,0 +1,80 @@
+#!/usr/bin/env kos
+
+import base.count
+import base.each
+import base.map
+import base.print
+import base.range
+import base.sum
+import base.string
+import io
+
+public fun main(script, input_file_name = "input06.txt")
+{
+    const area_map = []
+
+    with const file = io.open(input_file_name) {
+        area_map.insert(0, 0, file.read_lines().map(s => s.strip()))
+    }
+
+    # Starting position is "up"
+    var dir_x = 0
+    var dir_y = -1
+
+    # Find initial position
+    var pos_x = 0
+    var pos_y = 0
+    for const y in range(area_map.size) {
+        const x = area_map[y].scan("^")
+        if x != -1 {
+            pos_x = x
+            pos_y = y
+        }
+    }
+
+    # Mark visited positions
+    const mark_guard = s => [s -> map(c => c == "^")...]
+    const mark_map = [area_map -> map(mark_guard) ...]
+
+    # Process the map
+    loop {
+
+        # Get adjacent tile position
+        var new_x = pos_x + dir_x
+        var new_y = pos_y + dir_y
+
+        # Check if the guard left the map
+        if new_x < 0 || new_x >= area_map[0].size {
+            break
+        }
+        if new_y < 0 || new_y >= area_map[1].size {
+            break
+        }
+
+        # Get contents of the adjacent tile
+        const tile = area_map[new_y][new_x]
+
+        # If there is an obstacle, rotate right
+        if tile == "#" {
+            if dir_x {
+                dir_y = dir_x
+                dir_x = 0
+            }
+            else {
+                dir_x = -dir_y
+                dir_y = 0
+            }
+        }
+        # Otherwise move to the new position and mark it
+        else {
+            pos_x = new_x
+            pos_y = new_y
+            mark_map[pos_y][pos_x] = true
+        }
+    }
+    #mark_map -> map(line => [line -> map(x => x ? "#".code() : ".".code()) ...] -> string) -> each(print)
+
+    const num_visited = mark_map -> map(line => line -> count(visited => visited)) -> sum
+
+    print("Part 1 answer is \(num_visited)")
+}
