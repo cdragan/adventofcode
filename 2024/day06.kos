@@ -9,6 +9,17 @@ import base.sum
 import base.string
 import io
 
+# Determine if this location is adjacent to the path of the guard
+# such that placing an obstacle in this position would change
+# the direction of the guard
+fun is_adjacent_to_path(x, y, area_map, mark_map)
+{
+    # If
+    if mark_map[y][x] {
+        return true
+    }
+}
+
 public fun main(script, input_file_name = "input06.txt")
 {
     const area_map = []
@@ -20,6 +31,7 @@ public fun main(script, input_file_name = "input06.txt")
     # Starting position is "up"
     var dir_x = 0
     var dir_y = -1
+    var dir   = 1
 
     # Find initial position
     var pos_x = 0
@@ -29,11 +41,14 @@ public fun main(script, input_file_name = "input06.txt")
         if x != -1 {
             pos_x = x
             pos_y = y
+            break
         }
     }
+    const init_pos_x = pos_x
+    const init_pos_y = pos_y
 
     # Mark visited positions
-    const mark_guard = s => [s -> map(c => c == "^")...]
+    const mark_guard = s => [s -> map(c => c == "^" ? 1 : 0)...]
     const mark_map = [area_map -> map(mark_guard) ...]
 
     # Process the map
@@ -64,12 +79,14 @@ public fun main(script, input_file_name = "input06.txt")
                 dir_x = -dir_y
                 dir_y = 0
             }
+            dir = ((dir << 1) & 0xF) || 1
+            mark_map[pos_y][pos_x] |= dir
         }
         # Otherwise move to the new position and mark it
         else {
             pos_x = new_x
             pos_y = new_y
-            mark_map[pos_y][pos_x] = true
+            mark_map[pos_y][pos_x] |= dir
         }
     }
     #mark_map -> map(line => [line -> map(x => x ? "#".code() : ".".code()) ...] -> string) -> each(print)
@@ -77,4 +94,88 @@ public fun main(script, input_file_name = "input06.txt")
     const num_visited = mark_map -> map(line => line -> count(visited => visited)) -> sum
 
     print("Part 1 answer is \(num_visited)")
+
+    var count_good_spots = 0
+
+    # Find positions to place an obstacle
+    for const test_y in range(area_map.size) {
+        for const test_x in range(area_map[test_y].size) {
+
+            # Skip the initial position of the guard
+            if test_x == init_pos_x && test_y == init_pos_y {
+                continue
+            }
+
+            # Check if there in an obstacle at this position,
+            # or if this is directly in the path of the guard
+            # (such that it would change the direction of the guard)
+            if area_map[test_y][test_x] == "#" || ! mark_map[test_y][test_x] {
+                continue
+            }
+
+            # Create empty mark map
+            const tmp_mark_map = [area_map -> map(mark_guard) ...]
+
+            # Restart the simulation
+            pos_x = init_pos_x
+            pos_y = init_pos_y
+            dir_x = 0
+            dir_y = -1
+            dir   = 1
+
+            # Process the map
+            var detected_loop = false
+            loop {
+                # Get adjacent tile position
+                var new_x = pos_x + dir_x
+                var new_y = pos_y + dir_y
+
+                # Check if the guard left the map
+                if new_x < 0 || new_x >= area_map[0].size {
+                    break
+                }
+                if new_y < 0 || new_y >= area_map[1].size {
+                    break
+                }
+
+                # Get contents of the adjacent tile
+                var tile = area_map[new_y][new_x]
+                # or if this is the potential place for the new obstacle
+                if new_x == test_x && new_y == test_y {
+                    tile = "#"
+                }
+
+                # If there is an obstacle, rotate right
+                if tile == "#" {
+                    if dir_x {
+                        dir_y = dir_x
+                        dir_x = 0
+                    }
+                    else {
+                        dir_x = -dir_y
+                        dir_y = 0
+                    }
+                    dir = ((dir << 1) & 0xF) || 1
+                    tmp_mark_map[pos_y][pos_x] |= dir
+                }
+                # Otherwise move to the new position and mark it
+                else {
+                    pos_x = new_x
+                    pos_y = new_y
+                    const old_mark = tmp_mark_map[pos_y][pos_x]
+                    if old_mark & dir {
+                        detected_loop = true
+                        break
+                    }
+                    tmp_mark_map[pos_y][pos_x] = old_mark | dir
+                }
+            }
+
+            if detected_loop {
+                count_good_spots += 1
+            }
+        }
+    }
+
+    print("Part 2 answer is \(count_good_spots)")
 }
