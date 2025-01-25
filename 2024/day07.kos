@@ -1,0 +1,45 @@
+#!/usr/bin/env kos
+
+import io
+import base.*
+
+fun check_line_inner(result, input)
+{
+    if input.size == 1 {
+        return result == input[0]
+    }
+
+    const last = input.pop()
+
+    if result % last == 0 {
+        if check_line_inner(result / last, input) {
+            return true
+        }
+    }
+
+    if check_line_inner(result - last, input) {
+        return true
+    }
+
+    input.push(last)
+    return false
+}
+
+fun check_line(line)
+{
+    return check_line_inner(line[0], line[1:])
+}
+
+public fun main(_, input_file_name = "input07.txt")
+{
+    const input = []
+
+    with const file = io.open(input_file_name) {
+        for const line in file.read_lines() {
+            input.push(line.split() -> map(s => integer(s.strip(":"))) -> array)
+        }
+    }
+
+    const part1 = input -> filter(check_line) -> map(first) -> sum
+    print("Part 1 answer is \(part1)")
+}
