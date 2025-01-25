@@ -3,7 +3,7 @@
 import io
 import base.*
 
-fun check_line_inner(result, input)
+fun check_line1(result, input)
 {
     if input.size == 1 {
         return result == input[0]
@@ -12,12 +12,12 @@ fun check_line_inner(result, input)
     const last = input.pop()
 
     if result % last == 0 {
-        if check_line_inner(result / last, input) {
+        if check_line1(result / last, input) {
             return true
         }
     }
 
-    if check_line_inner(result - last, input) {
+    if check_line1(result - last, input) {
         return true
     }
 
@@ -25,9 +25,37 @@ fun check_line_inner(result, input)
     return false
 }
 
-fun check_line(line)
+fun check_line2(result, input)
 {
-    return check_line_inner(line[0], line[1:])
+    if input.size == 1 {
+        return result == input[0]
+    }
+
+    const last = input.pop()
+
+    if result % last == 0 {
+        if check_line2(result / last, input) {
+            return true
+        }
+    }
+
+    if check_line2(result - last, input) {
+        return true
+    }
+
+    const result_str = string(result)
+    const last_str   = string(last)
+    if result_str.ends_with(last_str) {
+        for const i in range(last_str.size) {
+            result /= 10
+        }
+        if check_line2(result, input) {
+            return true
+        }
+    }
+
+    input.push(last)
+    return false
 }
 
 public fun main(_, input_file_name = "input07.txt")
@@ -40,6 +68,9 @@ public fun main(_, input_file_name = "input07.txt")
         }
     }
 
-    const part1 = input -> filter(check_line) -> map(first) -> sum
+    const part1 = input -> filter(i => check_line1(i[0], i[1:])) -> map(first) -> sum
     print("Part 1 answer is \(part1)")
+
+    const part2 = input -> filter(i => check_line2(i[0], i[1:])) -> map(first) -> sum
+    print("Part 2 answer is \(part2)")
 }
